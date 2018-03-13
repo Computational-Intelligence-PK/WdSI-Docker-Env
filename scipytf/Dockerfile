@@ -10,7 +10,7 @@ USER root
 
 # libav-tools for matplotlib anim
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libav-tools && \
+    apt-get install -y --no-install-recommends libav-tools python3-pil python3-pyside python3-xlib python-xlib && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -64,20 +64,45 @@ RUN cd /tmp && \
     fix-permissions $CONDA_DIR && \
     fix-permissions $HOME
 
+RUN cd /tmp && \
+    git clone https://github.com/python-xlib/python-xlib.git && \
+    cd python-xlib && \
+    python setup.py install && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions $HOME
+
 # Import matplotlib the first time to build the font cache.
 ENV XDG_CACHE_HOME /home/$NB_USER/.cache/
 RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
     fix-permissions /home/$NB_USER
 
+RUN pip install deap && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions $HOME
+
 #### Tensorflow Notebook (https://github.com/jupyter/docker-stacks/blob/master/tensorflow-notebook) ####
 
 # Install Tensorflow and Keras
 RUN conda install --quiet --yes \
-    'tensorflow=1.3*' \
+    'tensorflow=1.4*' \
     'keras=2.0*' && \
     conda clean -tipsy && \
     fix-permissions $CONDA_DIR && \
     fix-permissions $HOME
 
-# Switch back to nbuser to avoid accidental container runs as root
+RUN conda install --quiet --yes -c conda-forge opencv
+
+USER root
+
+RUN pip install pyscreenshot curtsies keyboard && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions $HOME
+
+RUN pip install --upgrade mss && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions $HOME
+
+RUN chmod 777 /home/jovyan/work
+
+# Switch back to jovyan to avoid accidental container runs as root
 USER $NB_USER

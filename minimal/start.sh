@@ -17,18 +17,18 @@ if [ $(id -u) == 0 ]; then
 
     # Handle username change. Since this is cheap, do this unconditionally
     echo "Set username to: $NB_USER"
-    usermod -d /home/$NB_USER -l $NB_USER nbuser
+    usermod -d /home/$NB_USER -l $NB_USER jovyan
 
     # handle home and working directory if the username changed
-    if [[ "$NB_USER" != "nbuser" ]]; then
+    if [[ "$NB_USER" != "jovyan" ]]; then
         # changing username, make sure homedir exists
         # (it could be mounted, and we shouldn't create it if it already exists)
         if [[ ! -e "/home/$NB_USER" ]]; then
             echo "Relocating home dir to /home/$NB_USER"
-            mv /home/nbuser "/home/$NB_USER"
+            mv /home/jovyan "/home/$NB_USER"
         fi
-        # if workdir is in /home/nbuser, cd to /home/$NB_USER
-        if [[ "$PWD/" == "/home/nbuser/"* ]]; then
+        # if workdir is in /home/jovyan, cd to /home/$NB_USER
+        if [[ "$PWD/" == "/home/jovyan/"* ]]; then
             newcwd="/home/$NB_USER/${PWD:13}"
             echo "Setting CWD to $newcwd"
             cd "$newcwd"

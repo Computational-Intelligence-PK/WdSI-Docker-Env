@@ -36,7 +36,7 @@ RUN wget --quiet https://github.com/krallin/tini/releases/download/v0.10.0/tini 
 # Configure environment
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
-    NB_USER=nbuser \
+    NB_USER=jovyan \
     NB_UID=1000 \
     NB_GID=100 \
     LC_ALL=en_US.UTF-8 \
@@ -46,7 +46,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH \
     HOME=/home/$NB_USER
 
 ADD fix-permissions /usr/local/bin/fix-permissions
-# Create nbuser user with UID=1000 and in the 'users' group
+# Create jovyan user with UID=1000 and in the 'users' group
 # and make sure these dirs are writable by the `users` group.
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     mkdir -p $CONDA_DIR && \
@@ -57,10 +57,10 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
 USER $NB_USER
 
 # Setup work directory for backward-compatibility
-# RUN mkdir /home/$NB_USER/work 
+RUN mkdir /home/$NB_USER/work 
 RUN fix-permissions /home/$NB_USER
 
-# Install conda as nbuser and check the md5 sum provided on the download site
+# Install conda as jovyan and check the md5 sum provided on the download site
 ENV MINICONDA_VERSION 4.3.31
 RUN cd /tmp && \
     wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
@@ -130,5 +130,11 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/
 
-# Switch back to nbuser to avoid accidental container runs as root
+RUN apt-get clean
+
+VOLUME ["/home/jovyan/work"]
+
+RUN chmod 777 /home/jovyan/work
+
+# Switch back to jovyan to avoid accidental container runs as root
 USER $NB_USER

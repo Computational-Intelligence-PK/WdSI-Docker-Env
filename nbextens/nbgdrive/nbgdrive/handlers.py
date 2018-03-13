@@ -5,7 +5,7 @@ from notebook.base.handlers import IPythonHandler
 
 DRIVE_MAX_SIZE = 1000
 SYNC_DIRECTORY = "/home/nbuser"
-DEFAULT_SYNC_NAME = "Jupyter/Nbgdrive"
+DEFAULT_SYNC_NAME = "JupyterData"
 
 STORED_DIR_COMMAND = 'SYNC_DIR_FILE=".syncdirectory.txt"; \
                     if [ -e  "$SYNC_DIR_FILE" ]; then \

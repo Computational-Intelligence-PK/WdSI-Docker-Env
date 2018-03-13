@@ -4,42 +4,62 @@ FROM amarszalek/wdsi-env:prolog
 
 LABEL maintainer="Adam Marszalek <amarszalek@pk.edu.pl>"
 
-#### nbzip ####
+#### nbgdrive ####
+
+RUN mkdir $HOME/.nbext
+ADD . $HOME/.nbext
+
+#USER root
+#
+#RUN mv $HOME/.nbext/nbgdrive/gdrive /usr/bin && \
+#    fix-permissions /usr/bin
+#
+#USER $NB_USER
+#
+#RUN cd $HOME/.nbext/nbgdrive && pip install . && \
+#    fix-permissions $CONDA_DIR && \
+#    fix-permissions $HOME
+#
+#RUN jupyter serverextension enable --sys-prefix --py nbgdrive && \
+#    jupyter nbextension install --sys-prefix --py nbgdrive && \
+#    jupyter nbextension enable --sys-prefix --py nbgdrive && \
+#    fix-permissions $CONDA_DIR && \
+#    fix-permissions $HOME
+
+#### nbzip (only chrome) ####
 
 USER root
 
-RUN pip install nbzip
+RUN apt-get update && apt-get install -yq --no-install-recommends zip unzip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/
 
-RUN jupyter nbextension install --py nbzip && \
-    jupyter nbextension enable --py nbzip && \
-    jupyter serverextension enable --sys-prefix --py nbzip && \
+USER $NB_USER
+
+RUN pip install nbzip && \
     fix-permissions $CONDA_DIR && \
     fix-permissions $HOME
 
-#### nbgdrive and nbresuse ####
-
-RUN mkdir /tmp/nbext
-ADD . /tmp/nbext
-
-RUN cd /tmp/nbext/nbgdrive && pip install .
-
-RUN jupyter serverextension enable --py nbgdrive && \
-    jupyter nbextension install --py nbgdrive && \
-    jupyter nbextension enable --py nbgdrive && \
+RUN jupyter serverextension enable --sys-prefix --py nbzip && \
+    jupyter nbextension install --sys-prefix --py nbzip && \
+    jupyter nbextension enable --sys-prefix --py nbzip && \
     fix-permissions $CONDA_DIR && \
-    fix-permissions /tmp/nbext && \
     fix-permissions $HOME
 
-RUN cd /tmp/nbext/nbresuse && pip install .
+#### nbresuse ####
 
-RUN jupyter serverextension enable --py nbresuse && \
-    jupyter nbextension install --py nbresuse && \
-    jupyter nbextension enable --py nbresuse && \
+RUN cd $HOME/.nbext/nbresuse && pip install . && \
     fix-permissions $CONDA_DIR && \
-    fix-permissions /tmp/nbext && \
     fix-permissions $HOME
 
+RUN jupyter serverextension enable --sys-prefix --py nbresuse && \
+    jupyter nbextension install --sys-prefix --py nbresuse && \
+    jupyter nbextension enable --sys-prefix --py nbresuse && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions $HOME
 
-# Switch back to student to avoid accidental container runs as root
+RUN chmod 777 /home/jovyan/work
+
+# Switch back to jovyan to avoid accidental container runs as root
 USER $NB_USER
 

@@ -85,5 +85,22 @@ RUN cd /tmp/iprolog/kernels && jupyter kernelspec install prolog && \
     fix-permissions /tmp/iprolog && \
     fix-permissions $HOME
 
-# Switch back to nbuser to avoid accidental container runs as root
+#### pymc3 (https://github.com/pymc-devs/pymc3) ####
+
+RUN conda install --quiet --yes -c conda-forge pymc3 && \
+    conda clean -tipsy && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions $HOME
+
+#### fuzzython (https://github.com/yudivian/fuzzython) ####
+
+RUN mv /tmp/iprolog/fuzzython /opt/conda/lib/python3.6/site-packages && \
+    cd /opt/conda/lib/python3.6/site-packages/fuzzython && \
+    python setup.py install
+
+RUN apt-get clean
+
+RUN chmod 777 /home/jovyan/work
+
+# Switch back to jovyan to avoid accidental container runs as root
 USER $NB_USER
